@@ -33,4 +33,4 @@ Bridges listen on `127.0.0.1` only. `pr-mcp` and `blender-mcp` require a random 
 
 ## License
 
-[MIT](LICENSE)
+Dual-licensed under [MIT](LICENSE-MIT) or [GPL-3.0](LICENSE-GPL), at your option.
