@@ -1,0 +1,261 @@
+[
+  {
+    "name": "get_project_info",
+    "description": "Get the open After Effects project: version, file path, active item and a summary of every composition.",
+    "undoGroup": false,
+    "inputSchema": { "type": "object", "properties": {} }
+  },
+  {
+    "name": "list_items",
+    "description": "List project items (compositions, footage, folders) with ids, names and sizes.",
+    "undoGroup": false,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["all", "comp", "footage", "folder"], "description": "Filter by item type. Default: all." }
+      }
+    }
+  },
+  {
+    "name": "get_comp_details",
+    "description": "Get a composition's settings and every layer (index, name, type, timing, parent, transform, effects).",
+    "undoGroup": false,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "comp": { "type": ["string", "number"], "description": "Composition name or item id. Omit for the active composition." }
+      }
+    }
+  },
+  {
+    "name": "create_composition",
+    "description": "Create a new composition and (by default) open it in the viewer.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "width": { "type": "integer", "description": "Default 1920." },
+        "height": { "type": "integer", "description": "Default 1080." },
+        "duration": { "type": "number", "description": "Seconds. Default 10." },
+        "frameRate": { "type": "number", "description": "Default 30." },
+        "pixelAspect": { "type": "number", "description": "Default 1." },
+        "bgColor": { "description": "\"#rrggbb\" or [r,g,b] (0-1 or 0-255)." },
+        "open": { "type": "boolean", "description": "Open in the viewer. Default true." }
+      },
+      "required": ["name"]
+    }
+  },
+  {
+    "name": "add_layer",
+    "description": "Add a layer to a composition: text, solid, adjustment, null, shape (rectangle/ellipse), camera or light. Layers are added at the top of the stack, centered.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "comp": { "type": ["string", "number"], "description": "Composition name or id. Omit for the active comp." },
+        "type": { "type": "string", "enum": ["text", "solid", "adjustment", "null", "shape", "camera", "light"] },
+        "name": { "type": "string" },
+        "text": { "type": "string", "description": "Text layers: the text." },
+        "fontSize": { "type": "number", "description": "Text layers. Default 72." },
+        "font": { "type": "string", "description": "Text layers: PostScript font name, e.g. \"Arial-BoldMT\"." },
+        "justification": { "type": "string", "enum": ["left", "center", "right"] },
+        "color": { "description": "Fill color for text/solid/shape: \"#rrggbb\" or [r,g,b]. For shape, null means no fill." },
+        "shape": { "type": "string", "enum": ["rectangle", "ellipse"], "description": "Shape layers. Default rectangle." },
+        "size": { "type": "array", "items": { "type": "number" }, "description": "Shape layers: [width, height]. Default [400, 400]." },
+        "roundness": { "type": "number", "description": "Rectangle corner radius." },
+        "strokeColor": { "description": "Shape layers: add a stroke with this color." },
+        "strokeWidth": { "type": "number" },
+        "width": { "type": "integer", "description": "Solid layers. Default comp width." },
+        "height": { "type": "integer", "description": "Solid layers. Default comp height." },
+        "position": { "type": "array", "items": { "type": "number" }, "description": "[x, y] or [x, y, z] in comp pixels." },
+        "threeD": { "type": "boolean" },
+        "startTime": { "type": "number", "description": "Seconds." },
+        "duration": { "type": "number", "description": "Seconds. Default: comp duration." }
+      },
+      "required": ["type"]
+    }
+  },
+  {
+    "name": "set_layer_properties",
+    "description": "Change a layer's attributes and property values. 'properties' maps property paths to values, e.g. {\"Position\": [960, 540], \"Opacity\": 50, \"Scale\": 80, \"Rotation\": 45, \"Source Text\": \"Hello\", \"Effects/Gaussian Blur/Blurriness\": 10}. If a property already has keyframes, the value is set at the current time.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "comp": { "type": ["string", "number"] },
+        "layer": { "type": ["string", "number"], "description": "Layer name or 1-based index. Omit to use the single selected layer." },
+        "properties": { "type": "object", "description": "Property path -> value. Colors accept \"#rrggbb\". Source Text accepts a string or {text, fontSize, font, fillColor, strokeColor, strokeWidth, tracking, leading, justification}." },
+        "name": { "type": "string", "description": "Rename the layer." },
+        "enabled": { "type": "boolean" },
+        "threeD": { "type": "boolean" },
+        "parent": { "type": ["string", "number", "null"], "description": "Parent layer name/index, or null to unparent." },
+        "startTime": { "type": "number" },
+        "inPoint": { "type": "number" },
+        "outPoint": { "type": "number" },
+        "blendingMode": { "type": "string", "description": "e.g. NORMAL, ADD, SCREEN, MULTIPLY, OVERLAY." }
+      }
+    }
+  },
+  {
+    "name": "set_keyframes",
+    "description": "Add keyframes to a layer property. Example: property \"Position\", keyframes [{\"time\":0,\"value\":[0,540]},{\"time\":2,\"value\":[1920,540]}], interpolation \"easy_ease\".",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "comp": { "type": ["string", "number"] },
+        "layer": { "type": ["string", "number"] },
+        "property": { "type": "string", "description": "Property path, e.g. \"Position\", \"Opacity\", \"Effects/Gaussian Blur/Blurriness\"." },
+        "keyframes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "time": { "type": "number", "description": "Seconds (comp time)." },
+              "value": { "description": "Value at that time." },
+              "interpolation": { "type": "string", "enum": ["linear", "easy_ease", "ease_in", "ease_out", "hold"] },
+              "influence": { "type": "number", "description": "Ease influence %, default 33.33." }
+            },
+            "required": ["time", "value"]
+          }
+        },
+        "interpolation": { "type": "string", "enum": ["linear", "easy_ease", "ease_in", "ease_out", "hold"], "description": "Default for all keyframes." },
+        "influence": { "type": "number" },
+        "clear_existing": { "type": "boolean", "description": "Remove existing keyframes first." }
+      },
+      "required": ["property", "keyframes"]
+    }
+  },
+  {
+    "name": "set_expression",
+    "description": "Set (or clear with an empty string) an expression on a layer property, e.g. \"wiggle(2, 30)\" on Position.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "comp": { "type": ["string", "number"] },
+        "layer": { "type": ["string", "number"] },
+        "property": { "type": "string" },
+        "expression": { "type": "string" }
+      },
+      "required": ["property", "expression"]
+    }
+  },
+  {
+    "name": "list_effects",
+    "description": "Search the effects installed in After Effects (display name, match name, category).",
+    "undoGroup": false,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": { "type": "string", "description": "Case-insensitive filter, e.g. \"blur\"." },
+        "limit": { "type": "integer", "description": "Default 200." }
+      }
+    }
+  },
+  {
+    "name": "apply_effect",
+    "description": "Apply an effect to a layer and optionally set its parameters. Returns the effect's parameter names and values.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "comp": { "type": ["string", "number"] },
+        "layer": { "type": ["string", "number"] },
+        "effect": { "type": "string", "description": "Display name (\"Gaussian Blur\") or match name (\"ADBE Gaussian Blur 2\")." },
+        "name": { "type": "string", "description": "Rename the effect instance." },
+        "params": { "type": "object", "description": "Parameter name -> value, e.g. {\"Blurriness\": 20}." }
+      },
+      "required": ["effect"]
+    }
+  },
+  {
+    "name": "get_layer_properties",
+    "description": "Inspect a layer's property tree (names, match names, values, keyframe counts, expressions). Use it to discover property paths.",
+    "undoGroup": false,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "comp": { "type": ["string", "number"] },
+        "layer": { "type": ["string", "number"] },
+        "path": { "type": "string", "description": "Start at this group, e.g. \"Transform\" or \"Effects\". Default: the whole layer." },
+        "depth": { "type": "integer", "description": "Levels to expand. Default 2." }
+      }
+    }
+  },
+  {
+    "name": "layer_action",
+    "description": "Delete, duplicate, reorder or precompose a layer.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "comp": { "type": ["string", "number"] },
+        "layer": { "type": ["string", "number"] },
+        "action": { "type": "string", "enum": ["delete", "duplicate", "move_to_top", "move_to_bottom", "move_before", "move_after", "precompose"] },
+        "target": { "type": ["string", "number"], "description": "move_before / move_after: the other layer." },
+        "new_name": { "type": "string", "description": "duplicate / precompose: name for the new layer or comp." }
+      },
+      "required": ["action"]
+    }
+  },
+  {
+    "name": "import_file",
+    "description": "Import a file (image, video, audio, .ai/.psd, image sequence) into the project, optionally adding it to a composition.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "Absolute file path." },
+        "name": { "type": "string" },
+        "sequence": { "type": "boolean", "description": "Import as an image sequence." },
+        "add_to_comp": { "type": ["string", "number"], "description": "Also add it as a layer to this composition." }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "render_comp",
+    "description": "Add a composition to the Render Queue with an output path, and optionally render immediately (renders the whole queue; After Effects is busy until it finishes).",
+    "timeout": 3600,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "comp": { "type": ["string", "number"] },
+        "output_path": { "type": "string", "description": "Absolute output file path, e.g. C:\\\\Renders\\\\intro.mp4." },
+        "output_module_template": { "type": "string", "description": "e.g. \"H.264 - Match Render Settings - 15 Mbps\". The result lists available templates." },
+        "render_settings_template": { "type": "string", "description": "e.g. \"Best Settings\"." },
+        "render_now": { "type": "boolean", "description": "Default false." }
+      },
+      "required": ["output_path"]
+    }
+  },
+  {
+    "name": "preview_frame",
+    "description": "Render one frame of a composition and return it as an image, to check what the comp looks like.",
+    "undoGroup": false,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "comp": { "type": ["string", "number"] },
+        "time": { "type": "number", "description": "Seconds. Default: current time indicator." },
+        "max_size": { "type": "integer", "description": "Longest side of the returned image in pixels. Default 1024." }
+      }
+    }
+  },
+  {
+    "name": "save_project",
+    "description": "Save the project, or save it to a new .aep path.",
+    "undoGroup": false,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "Absolute .aep path. Required if the project was never saved." }
+      }
+    }
+  },
+  {
+    "name": "run_extendscript",
+    "description": "Run arbitrary ExtendScript (ES3 JavaScript) in After Effects for anything the other tools don't cover. The value of the last expression is returned as JSON. Helpers available: findComp(nameOrId), findLayer(comp, nameOrIndex), resolveProp(layer, 'Path/To/Prop'), setProp(prop, value), toColor(c), describeLayer(l), describeComp(c). The script runs in one undo group.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "code": { "type": "string", "description": "e.g. var c = findComp(); c.layer(1).name" }
+      },
+      "required": ["code"]
+    }
+  }
+]

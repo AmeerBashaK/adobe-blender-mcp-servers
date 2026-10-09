@@ -1,0 +1,267 @@
+[
+  {
+    "name": "get_document_info",
+    "description": "Photoshop version, open documents, and the active (or named) document's size, mode and full layer tree (id, path, kind, visibility, opacity, blend mode, bounds, text).",
+    "undoGroup": false,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string", "description": "Document name. Omit for the active document." },
+        "layers": { "type": "boolean", "description": "Include the layer tree. Default true." }
+      }
+    }
+  },
+  {
+    "name": "create_document",
+    "description": "Create a new RGB document. Common sizes: 1080x1080 (IG square), 1080x1350 (IG portrait), 1080x1920 (story/reel), 1920x1080.",
+    "undoGroup": false,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "width": { "type": "integer", "description": "Pixels. Default 1080." },
+        "height": { "type": "integer", "description": "Pixels. Default 1080." },
+        "resolution": { "type": "number", "description": "PPI. Default 72." },
+        "background": { "type": "string", "description": "\"white\" (default), \"transparent\", \"black\" or \"#rrggbb\"." }
+      }
+    }
+  },
+  {
+    "name": "open_file",
+    "description": "Open an image or PSD from disk.",
+    "undoGroup": false,
+    "inputSchema": {
+      "type": "object",
+      "properties": { "path": { "type": "string", "description": "Absolute path." } },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "add_layer",
+    "description": "Add a layer: pixel (empty), text, group, solid (fills the canvas or rect), rectangle or ellipse (filled shape, rasterized). Fonts use PostScript names, e.g. \"ArialMT\", \"Montserrat-Bold\".",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "type": { "type": "string", "enum": ["pixel", "text", "group", "solid", "rectangle", "ellipse"], "description": "Default pixel." },
+        "name": { "type": "string" },
+        "text": { "type": "string", "description": "Text content (\\n for line breaks)." },
+        "x": { "type": "number", "description": "Text baseline origin x. Default 100." },
+        "y": { "type": "number", "description": "Text baseline origin y. Default 100." },
+        "box": { "type": "array", "items": { "type": "number" }, "description": "[x, y, width, height]: makes paragraph (wrapping) text." },
+        "font": { "type": "string", "description": "PostScript font name." },
+        "fontSize": { "type": "number", "description": "Pixels. Default 48." },
+        "color": { "type": "string", "description": "\"#rrggbb\". Text or fill color. Default black." },
+        "justification": { "type": "string", "enum": ["left", "center", "right"] },
+        "tracking": { "type": "number" },
+        "leading": { "type": "number" },
+        "rect": { "type": "array", "items": { "type": "number" }, "description": "[x, y, width, height] for solid/rectangle/ellipse." },
+        "feather": { "type": "number" },
+        "opacity": { "type": "number", "description": "0-100." },
+        "blendMode": { "type": "string", "description": "normal, multiply, screen, overlay, softlight, hardlight, colordodge, lineardodge, color, luminosity, ..." }
+      }
+    }
+  },
+  {
+    "name": "set_layer_properties",
+    "description": "Change a layer's name, visibility, opacity, fill opacity, blend mode, lock, and (text layers) text, font, size, color, justification, tracking, leading.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "layer": { "type": ["string", "number"], "description": "Layer id (number), \"Group/Layer\" path, or name. Omit for the active layer." },
+        "name": { "type": "string" },
+        "visible": { "type": "boolean" },
+        "opacity": { "type": "number" },
+        "fillOpacity": { "type": "number" },
+        "blendMode": { "type": "string" },
+        "locked": { "type": "boolean" },
+        "text": { "type": "string" },
+        "font": { "type": "string" },
+        "fontSize": { "type": "number" },
+        "color": { "type": "string" },
+        "justification": { "type": "string", "enum": ["left", "center", "right"] },
+        "tracking": { "type": "number" },
+        "leading": { "type": "number" }
+      }
+    }
+  },
+  {
+    "name": "transform_layer",
+    "description": "Move, scale, rotate, flip, center or fit a layer. Order: fit, scale, rotate, flip, moveBy, x/y, center.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "layer": { "type": ["string", "number"] },
+        "fit": { "type": "string", "enum": ["fit", "fill"], "description": "Scale to fit inside / fill the canvas, centered." },
+        "scale": { "type": ["number", "array"], "description": "Percent, or [x%, y%]." },
+        "rotate": { "type": "number", "description": "Degrees clockwise." },
+        "flip": { "type": "string", "enum": ["horizontal", "vertical"] },
+        "anchor": { "type": "string", "description": "For scale/rotate: topleft, topcenter, middlecenter (default), bottomright, ..." },
+        "moveBy": { "type": "array", "items": { "type": "number" }, "description": "[dx, dy]." },
+        "x": { "type": "number", "description": "Move the layer's left edge (or center, with align=center) here." },
+        "y": { "type": "number" },
+        "align": { "type": "string", "enum": ["topleft", "center"], "description": "What x/y refer to. Default topleft." },
+        "center": { "type": "boolean", "description": "Center on the canvas." }
+      }
+    }
+  },
+  {
+    "name": "layer_action",
+    "description": "delete, duplicate, select, bring_forward, send_backward, to_top, to_bottom, move_into (a group), merge_down, rasterize, unlock_background, mask_from_selection, remove_background (Select Subject + mask), convert_to_smart_object.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "layer": { "type": ["string", "number"] },
+        "action": { "type": "string", "enum": ["delete", "duplicate", "select", "bring_forward", "send_backward", "to_top", "to_bottom", "move_into", "merge_down", "rasterize", "unlock_background", "mask_from_selection", "remove_background", "convert_to_smart_object"] },
+        "name": { "type": "string", "description": "Name for the duplicate." },
+        "target": { "type": ["string", "number"], "description": "Group for move_into." }
+      },
+      "required": ["action"]
+    }
+  },
+  {
+    "name": "place_image",
+    "description": "Place an image file as a smart-object layer in the document, centered by default.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "path": { "type": "string" },
+        "name": { "type": "string" },
+        "fit": { "type": "string", "enum": ["fit", "fill"], "description": "Scale to fit inside / fill the canvas." },
+        "width": { "type": "number", "description": "Scale to this width in px (keeps aspect)." },
+        "x": { "type": "number", "description": "Left edge. Omit x and y to center." },
+        "y": { "type": "number", "description": "Top edge." },
+        "rasterize": { "type": "boolean" }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "apply_filter",
+    "description": "Apply a filter or adjustment to a pixel layer. Filters and params: gaussian_blur {radius}, motion_blur {angle, radius}, radial_blur {amount}, add_noise {amount, monochromatic}, median {radius}, unsharp_mask {amount, radius, threshold}, sharpen, high_pass {radius}, brightness_contrast {brightness, contrast}, levels {inputBlack, inputWhite, gamma, outputBlack, outputWhite}, hue_saturation {hue, saturation, lightness}, colorize {hue, saturation, lightness}, photo_filter {color, density}, desaturate, invert, auto_levels, auto_contrast, posterize {levels}, threshold {level}. Rasterize smart objects/text first.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "layer": { "type": ["string", "number"] },
+        "filter": { "type": "string" },
+        "params": { "type": "object" }
+      },
+      "required": ["filter"]
+    }
+  },
+  {
+    "name": "selection",
+    "description": "Selections: all, none, invert, rect, ellipse, subject (AI Select Subject on the given/active layer), layer_pixels (select a layer's opaque pixels), fill (fill selection on the active layer), clear, stroke, crop (crop document to selection). Returns the selection bounds.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "action": { "type": "string", "enum": ["all", "none", "invert", "rect", "ellipse", "subject", "layer_pixels", "fill", "clear", "stroke", "crop"] },
+        "layer": { "type": ["string", "number"], "description": "Make this layer active first." },
+        "rect": { "type": "array", "items": { "type": "number" }, "description": "[x, y, width, height]." },
+        "feather": { "type": "number" },
+        "color": { "type": "string" },
+        "opacity": { "type": "number" },
+        "width": { "type": "number", "description": "Stroke width px." },
+        "sampleAllLayers": { "type": "boolean" }
+      },
+      "required": ["action"]
+    }
+  },
+  {
+    "name": "resize_document",
+    "description": "Resize the image (resample), change the canvas size, or crop to a rectangle.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "mode": { "type": "string", "enum": ["image", "canvas", "crop"], "description": "Default image." },
+        "width": { "type": "number" },
+        "height": { "type": "number" },
+        "anchor": { "type": "string", "description": "Canvas anchor, default middlecenter." },
+        "rect": { "type": "array", "items": { "type": "number" }, "description": "[x, y, width, height] for crop." }
+      }
+    }
+  },
+  {
+    "name": "preview_document",
+    "description": "Render the document (all visible layers) and return it as an image so you can see the result.",
+    "undoGroup": false,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "max_size": { "type": "integer", "description": "Longest side in px. Default 1024." }
+      }
+    }
+  },
+  {
+    "name": "export_document",
+    "description": "Save a copy as png, jpg, psd or tif (the open document keeps its own file).",
+    "undoGroup": false,
+    "timeout": 300,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "path": { "type": "string", "description": "Absolute output path." },
+        "format": { "type": "string", "enum": ["png", "jpg", "psd", "tif"], "description": "Default: from the extension." },
+        "quality": { "type": "number", "description": "JPG quality 0-100. Default ~83." }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "save_document",
+    "description": "Save the document (PSD). Pass path to Save As.",
+    "undoGroup": false,
+    "timeout": 300,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "path": { "type": "string" }
+      }
+    }
+  },
+  {
+    "name": "close_document",
+    "description": "Close a document, discarding changes unless save is true.",
+    "undoGroup": false,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "save": { "type": "boolean" }
+      }
+    }
+  },
+  {
+    "name": "undo",
+    "description": "Step back (or forward with redo) through the History panel. Each MCP tool call is one history step.",
+    "undoGroup": false,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "steps": { "type": "integer", "description": "Default 1." },
+        "redo": { "type": "boolean" }
+      }
+    }
+  },
+  {
+    "name": "run_extendscript",
+    "description": "Escape hatch: run any Photoshop ExtendScript (ES3) and get the last expression's value back. Helpers available: findDoc, findLayer, toColor, describeDoc, describeLayer, selectRect, px.",
+    "timeout": 600,
+    "inputSchema": {
+      "type": "object",
+      "properties": { "code": { "type": "string" } },
+      "required": ["code"]
+    }
+  }
+]

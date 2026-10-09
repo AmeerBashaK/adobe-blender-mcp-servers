@@ -1,0 +1,11 @@
+var seq = findSeq(ARGS.sequence);
+var c = findClip(seq, ARGS);
+var qc = qeClipFor(seq, ARGS, c);
+var audio = ARGS.type === 'audio';
+var name = ARGS.transition || (audio ? 'Constant Power' : 'Cross Dissolve');
+var tr = audio ? qe.project.getAudioTransitionByName(name) : qe.project.getVideoTransitionByName(name);
+if (!tr) throw new Error('Transition not found: ' + name);
+var dur = formattedTime(seq, ARGS.duration || 1);
+var atStart = ARGS.at === 'start';
+qc.addTransition(tr, atStart, dur, '00:00:00:00', 0.5, false, true);
+return { clip: c.name, transition: name, at: atStart ? 'start' : 'end', duration: ARGS.duration || 1 };

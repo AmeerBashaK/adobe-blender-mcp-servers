@@ -1,0 +1,284 @@
+[
+  {
+    "name": "get_scene_info",
+    "description": "Blender version, file, frame range/fps, render engine and resolution, active camera, collections, and every object (name, type, location, rotation in degrees, scale, dimensions, materials).",
+    "inputSchema": {
+      "type": "object",
+      "properties": { "limit": { "type": "integer", "description": "Max objects listed. Default 200." } }
+    }
+  },
+  {
+    "name": "get_object_info",
+    "description": "Details of one object: transform, mesh stats, modifiers, materials, keyframes, children.",
+    "inputSchema": {
+      "type": "object",
+      "properties": { "name": { "type": "string", "description": "Omit for the active object." } }
+    }
+  },
+  {
+    "name": "create_object",
+    "description": "Create an object: cube, plane, sphere, ico_sphere, cylinder, cone, torus, circle, grid, monkey, text, empty, camera, or a light (point, sun, spot, area). Meters and degrees. Cameras become the scene camera by default.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "name": { "type": "string" },
+        "location": { "type": "array", "items": { "type": "number" } },
+        "rotation": { "type": "array", "items": { "type": "number" }, "description": "Degrees [x, y, z]." },
+        "scale": { "type": ["number", "array"] },
+        "size": { "type": "number", "description": "Overall size/diameter in meters (text: letter height). Default 2 (text 1)." },
+        "depth": { "type": "number", "description": "Cylinder/cone height." },
+        "segments": { "type": "integer" },
+        "subdivisions": { "type": "integer" },
+        "minor_radius": { "type": "number" },
+        "smooth": { "type": "boolean", "description": "Shade smooth." },
+        "color": { "type": "string", "description": "\"#rrggbb\": quick material for meshes/text, or light color." },
+        "text": { "type": "string" },
+        "extrude": { "type": "number" },
+        "bevel": { "type": "number" },
+        "align": { "type": "string", "enum": ["left", "center", "right"] },
+        "font": { "type": "string", "description": "Path to a .ttf/.otf for text." },
+        "lens": { "type": "number", "description": "Camera focal length mm. Default 50." },
+        "active": { "type": "boolean", "description": "Camera: make it the scene camera. Default true." },
+        "light_type": { "type": "string", "enum": ["point", "sun", "spot", "area"] },
+        "energy": { "type": "number", "description": "Light watts (sun: strength). Default 1000 (sun 5)." },
+        "light_size": { "type": "number" },
+        "look_at": { "type": ["string", "array"], "description": "Camera/light/empty: aim at an object name or [x, y, z]." },
+        "collection": { "type": "string", "description": "Put it in this collection (created if missing)." }
+      }
+    }
+  },
+  {
+    "name": "modify_object",
+    "description": "Change an object: location, move_by, rotation (degrees), scale, dimensions, look_at, parent (\"\" to clear), hidden, shade smooth/flat, text, light energy/color, camera lens/active, select, apply_transform, new_name.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "location": { "type": "array", "items": { "type": "number" } },
+        "move_by": { "type": "array", "items": { "type": "number" } },
+        "rotation": { "type": "array", "items": { "type": "number" } },
+        "scale": { "type": ["number", "array"] },
+        "dimensions": { "type": "array", "items": { "type": "number" } },
+        "look_at": { "type": ["string", "array"] },
+        "parent": { "type": "string" },
+        "hidden": { "type": "boolean" },
+        "shade": { "type": "string", "enum": ["smooth", "flat"] },
+        "text": { "type": "string" },
+        "energy": { "type": "number" },
+        "color": { "type": "string" },
+        "lens": { "type": "number" },
+        "active": { "type": "boolean" },
+        "select": { "type": "boolean" },
+        "apply_transform": { "type": "boolean", "description": "Apply rotation and scale." },
+        "new_name": { "type": "string" }
+      }
+    }
+  },
+  {
+    "name": "delete_objects",
+    "description": "Delete objects by name.",
+    "inputSchema": {
+      "type": "object",
+      "properties": { "names": { "type": "array", "items": { "type": "string" } } },
+      "required": ["names"]
+    }
+  },
+  {
+    "name": "duplicate_object",
+    "description": "Duplicate an object count times, each shifted by offset (meters).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "count": { "type": "integer", "description": "Default 1." },
+        "offset": { "type": "array", "items": { "type": "number" } },
+        "linked": { "type": "boolean", "description": "Share mesh data (Alt+D)." }
+      }
+    }
+  },
+  {
+    "name": "set_material",
+    "description": "Create or edit a Principled BSDF material on an object: color, metallic, roughness, emission (+ strength), transmission (glass), alpha, image texture. Reuses the object's current material unless material/new is given.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "object": { "type": "string" },
+        "material": { "type": "string", "description": "Material name (reused if it exists)." },
+        "new": { "type": "boolean" },
+        "color": { "type": "string" },
+        "metallic": { "type": "number" },
+        "roughness": { "type": "number" },
+        "emission": { "type": "string" },
+        "emission_strength": { "type": "number" },
+        "transmission": { "type": "number" },
+        "alpha": { "type": "number" },
+        "image": { "type": "string", "description": "Image file for the base color." },
+        "slot": { "type": "integer" },
+        "append": { "type": "boolean", "description": "Add as an extra slot instead of replacing." }
+      }
+    }
+  },
+  {
+    "name": "add_modifier",
+    "description": "Add a modifier (BEVEL, SUBSURF, ARRAY, MIRROR, SOLIDIFY, BOOLEAN, DISPLACE, WIREFRAME, SCREW, CURVE, ...) with settings by their Python names, e.g. {\"levels\": 2}, {\"width\": 0.05, \"segments\": 3}, {\"count\": 5, \"relative_offset_displace\": [1.2, 0, 0]}, {\"operation\": \"DIFFERENCE\", \"object\": \"Cutter\"}. apply=true applies it.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "object": { "type": "string" },
+        "type": { "type": "string" },
+        "name": { "type": "string" },
+        "params": { "type": "object" },
+        "apply": { "type": "boolean" }
+      },
+      "required": ["type"]
+    }
+  },
+  {
+    "name": "animate",
+    "description": "Keyframe an object property: location, rotation (degrees), scale, or for lights/cameras energy, color, lens. keyframes = [{frame, value}]. Optional interpolation (BEZIER, LINEAR, CONSTANT), frame_start/frame_end/fps, clear=true to remove animation.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "object": { "type": "string" },
+        "property": { "type": "string" },
+        "keyframes": { "type": "array", "items": { "type": "object" } },
+        "interpolation": { "type": "string" },
+        "frame_start": { "type": "integer" },
+        "frame_end": { "type": "integer" },
+        "fps": { "type": "integer" },
+        "clear": { "type": "boolean" }
+      }
+    }
+  },
+  {
+    "name": "set_world",
+    "description": "World background: solid color or an HDRI image, and strength.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "color": { "type": "string" },
+        "hdri": { "type": "string", "description": "Path to .hdr/.exr." },
+        "strength": { "type": "number" }
+      }
+    }
+  },
+  {
+    "name": "render_settings",
+    "description": "Set engine (eevee, cycles, workbench), resolution [w, h], percentage, samples, fps, frame_start/frame_end, transparent background, output path, format (PNG, JPEG, OPEN_EXR, MP4), view_transform (Standard, AgX, Filmic). Returns current settings (call with no args to read).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "engine": { "type": "string" },
+        "resolution": { "type": "array", "items": { "type": "integer" } },
+        "percentage": { "type": "integer" },
+        "samples": { "type": "integer" },
+        "fps": { "type": "integer" },
+        "frame_start": { "type": "integer" },
+        "frame_end": { "type": "integer" },
+        "transparent": { "type": "boolean" },
+        "output": { "type": "string" },
+        "format": { "type": "string" },
+        "view_transform": { "type": "string" }
+      }
+    }
+  },
+  {
+    "name": "viewport_screenshot",
+    "description": "Screenshot the 3D Viewport and return it as an image (fast way to see the scene). Optional view (FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM, CAMERA) and frame_selected to zoom to everything.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "view": { "type": "string" },
+        "frame_selected": { "type": "boolean" },
+        "max_size": { "type": "integer", "description": "Default 1024." }
+      }
+    }
+  },
+  {
+    "name": "render_preview",
+    "description": "Quick low-sample render through the scene camera, returned as an image. Render settings are restored afterwards.",
+    "timeout": 600,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "max_size": { "type": "integer", "description": "Longest side px. Default 800." },
+        "samples": { "type": "integer", "description": "Cap on samples. Default 16." },
+        "frame": { "type": "integer" }
+      }
+    }
+  },
+  {
+    "name": "render",
+    "description": "Full render of the current frame (or the animation) with the scene's settings to path / the output path.",
+    "timeout": 7200,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string", "description": "Output path. For animation, a prefix like D:/out/frame_ or a .mp4 with format MP4." },
+        "animation": { "type": "boolean" },
+        "frame": { "type": "integer" }
+      }
+    }
+  },
+  {
+    "name": "import_file",
+    "description": "Import obj, fbx, glb/gltf, stl, ply, usd, abc, svg, or an image (as a textured plane).",
+    "timeout": 600,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string" },
+        "size": { "type": "number", "description": "Image plane size in meters. Default 2." }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "export_file",
+    "description": "Export the scene (or only the named objects) to obj, fbx, glb, gltf, stl, ply or usd.",
+    "timeout": 600,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string" },
+        "objects": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "file",
+    "description": "save (optionally Save As path), open a .blend, or new (default startup scene; empty=true for a blank one).",
+    "timeout": 300,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": { "type": "string", "enum": ["save", "open", "new"] },
+        "path": { "type": "string" },
+        "empty": { "type": "boolean" }
+      }
+    }
+  },
+  {
+    "name": "undo",
+    "description": "Undo (or redo) steps. Each modifying MCP call is one step.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "steps": { "type": "integer" },
+        "redo": { "type": "boolean" }
+      }
+    }
+  },
+  {
+    "name": "run_python",
+    "description": "Escape hatch: run Python in Blender (bpy, mathutils, math, C = context, D = data, plus get_obj, describe, hex_color, run_op, ctx). Returns the last expression's value (or a variable named result) and printed output. Use run_op(bpy.ops.x.y, ...) for operators that need a UI context.",
+    "timeout": 600,
+    "inputSchema": {
+      "type": "object",
+      "properties": { "code": { "type": "string" } },
+      "required": ["code"]
+    }
+  }
+]

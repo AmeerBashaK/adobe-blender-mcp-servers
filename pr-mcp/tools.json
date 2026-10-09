@@ -1,0 +1,243 @@
+[
+  {
+    "name": "get_project_info",
+    "description": "Premiere version, open project, all sequences, the active (or named) sequence with every video/audio track, clip (start/end/in/out seconds, media, effects) and marker, plus top-level project items.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sequence": { "type": "string", "description": "Sequence name or id. Omit for the active sequence." },
+        "tracks": { "type": "boolean", "description": "Include tracks and clips. Default true." }
+      }
+    }
+  },
+  {
+    "name": "list_items",
+    "description": "Project panel tree: bins, clips, sequences, with media paths.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "bin": { "type": "string", "description": "Bin name or \"Bin/Sub\" path. Default: root." },
+        "depth": { "type": "integer", "description": "Default 3." }
+      }
+    }
+  },
+  {
+    "name": "project",
+    "description": "open (a .prproj), new (create a .prproj at path), save, save_as, close.",
+    "timeout": 300,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": { "type": "string", "enum": ["open", "new", "save", "save_as", "close"] },
+        "path": { "type": "string" },
+        "save": { "type": "boolean", "description": "close: save first." }
+      }
+    }
+  },
+  {
+    "name": "import_files",
+    "description": "Import media files (video, audio, images, .psd/.ai, .mogrt not here) into a bin (created if missing).",
+    "timeout": 600,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "paths": { "type": "array", "items": { "type": "string" } },
+        "bin": { "type": "string", "description": "Bin path, e.g. \"Footage/Day 1\". Default: root." },
+        "as_sequence": { "type": "boolean", "description": "Import numbered stills as an image sequence." }
+      },
+      "required": ["paths"]
+    }
+  },
+  {
+    "name": "create_sequence",
+    "description": "Create a sequence: from project items (matches their settings, clips laid end to end) or from a .sqpreset (default HD 1080p 29.97). width/height override the frame size, e.g. 1080x1920 for a vertical reel.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "items": { "type": "array", "items": { "type": "string" }, "description": "Project items to build it from." },
+        "preset": { "type": "string", "description": "Path to a .sqpreset." },
+        "width": { "type": "integer" },
+        "height": { "type": "integer" },
+        "bin": { "type": "string" }
+      }
+    }
+  },
+  {
+    "name": "add_clip",
+    "description": "Put a project item on a track at a time (seconds; default: end of that track). mode overwrite (default) or insert (ripples). Optional source in/out seconds.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sequence": { "type": "string" },
+        "item": { "type": "string" },
+        "type": { "type": "string", "enum": ["video", "audio"], "description": "Default video (linked audio follows)." },
+        "track": { "type": "integer", "description": "1-based. Default 1." },
+        "time": { "type": "number" },
+        "mode": { "type": "string", "enum": ["overwrite", "insert"] },
+        "in": { "type": "number" },
+        "out": { "type": "number" }
+      },
+      "required": ["item"]
+    }
+  },
+  {
+    "name": "clip_action",
+    "description": "Act on a timeline clip: remove, ripple_delete, move (to start or by moveBy seconds), trim (start/end on the timeline, in/out in the source), rename, disable, enable, select, speed (percent, optional reverse).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sequence": { "type": "string" },
+        "type": { "type": "string", "enum": ["video", "audio"] },
+        "track": { "type": "integer" },
+        "clip": { "type": ["integer", "string"], "description": "0-based index on the track, or clip name." },
+        "action": { "type": "string", "enum": ["remove", "ripple_delete", "move", "trim", "rename", "disable", "enable", "select", "speed"] },
+        "start": { "type": "number" },
+        "end": { "type": "number" },
+        "in": { "type": "number" },
+        "out": { "type": "number" },
+        "moveBy": { "type": "number" },
+        "name": { "type": "string" },
+        "speed": { "type": "number" },
+        "reverse": { "type": "boolean" }
+      },
+      "required": ["clip", "action"]
+    }
+  },
+  {
+    "name": "set_clip_property",
+    "description": "Read or set an effect property on a clip, optionally keyframed. Omit component to list components; omit property to read them all. Examples: component \"Motion\" property \"Scale\" (100 = 100%), \"Position\" ([0.5, 0.5] = center, normalized), \"Rotation\"; component \"Opacity\" property \"Opacity\". keyframes = [{time (sequence seconds), value}].",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sequence": { "type": "string" },
+        "type": { "type": "string", "enum": ["video", "audio"] },
+        "track": { "type": "integer" },
+        "clip": { "type": ["integer", "string"] },
+        "component": { "type": "string" },
+        "property": { "type": "string" },
+        "value": {},
+        "keyframes": { "type": "array", "items": { "type": "object" } }
+      },
+      "required": ["clip"]
+    }
+  },
+  {
+    "name": "apply_effect",
+    "description": "Add a video or audio effect to a clip by its English name, e.g. \"Gaussian Blur\", \"Lumetri Color\", \"Warp Stabilizer\", \"Crop\", \"Ultra Key\", \"Black & White\", \"DeNoise\".",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sequence": { "type": "string" },
+        "type": { "type": "string", "enum": ["video", "audio"] },
+        "track": { "type": "integer" },
+        "clip": { "type": ["integer", "string"] },
+        "effect": { "type": "string" }
+      },
+      "required": ["clip", "effect"]
+    }
+  },
+  {
+    "name": "add_transition",
+    "description": "Add a transition at the start or end of a clip. Default \"Cross Dissolve\" (video) / \"Constant Power\" (audio), 1 s. Others: \"Dip to Black\", \"Dip to White\", \"Film Dissolve\", \"Push\", \"Slide\".",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sequence": { "type": "string" },
+        "type": { "type": "string", "enum": ["video", "audio"] },
+        "track": { "type": "integer" },
+        "clip": { "type": ["integer", "string"] },
+        "transition": { "type": "string" },
+        "at": { "type": "string", "enum": ["start", "end"], "description": "Default end." },
+        "duration": { "type": "number", "description": "Seconds. Default 1." }
+      },
+      "required": ["clip"]
+    }
+  },
+  {
+    "name": "markers",
+    "description": "list, add (time, name, comment, duration, color index 0-7) or clear sequence markers.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sequence": { "type": "string" },
+        "action": { "type": "string", "enum": ["list", "add", "clear"] },
+        "time": { "type": "number" },
+        "name": { "type": "string" },
+        "comment": { "type": "string" },
+        "duration": { "type": "number" },
+        "color": { "type": "integer" }
+      }
+    }
+  },
+  {
+    "name": "playhead",
+    "description": "Read or set the playhead and the sequence in/out points (seconds). Also makes the sequence active.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sequence": { "type": "string" },
+        "time": { "type": "number" },
+        "in_point": { "type": "number" },
+        "out_point": { "type": "number" }
+      }
+    }
+  },
+  {
+    "name": "preview_frame",
+    "description": "Render one sequence frame (default: at the playhead) and return it as an image so you can see the edit.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sequence": { "type": "string" },
+        "time": { "type": "number" },
+        "max_size": { "type": "integer", "description": "Default 1024." }
+      }
+    }
+  },
+  {
+    "name": "export_sequence",
+    "description": "Export a sequence to a file. Default preset: H.264 Match Source - High bitrate (.mp4). range all / inout / workarea. queue=true sends it to Adobe Media Encoder instead of exporting in Premiere (which blocks Premiere until done).",
+    "timeout": 7200,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sequence": { "type": "string" },
+        "path": { "type": "string" },
+        "preset": { "type": "string", "description": "Path to an .epr preset." },
+        "range": { "type": "string", "enum": ["all", "inout", "workarea"] },
+        "queue": { "type": "boolean" },
+        "start_queue": { "type": "boolean" }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "import_mogrt",
+    "description": "Add a Motion Graphics Template (.mogrt, e.g. a title) to the timeline and set its parameters by display name (text params take a plain string).",
+    "timeout": 300,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sequence": { "type": "string" },
+        "path": { "type": "string" },
+        "time": { "type": "number" },
+        "track": { "type": "integer", "description": "Video track, 1-based. Default 1." },
+        "audio_track": { "type": "integer" },
+        "duration": { "type": "number" },
+        "params": { "type": "object" }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "run_extendscript",
+    "description": "Escape hatch: run any Premiere ExtendScript and get the last expression's value back. app.enableQE() unlocks the QE DOM. Helpers: findSeq, findItem, findClip, getTrack, describeSeq, describeClip, toTime, secs, qeSequence.",
+    "timeout": 600,
+    "inputSchema": {
+      "type": "object",
+      "properties": { "code": { "type": "string" } },
+      "required": ["code"]
+    }
+  }
+]

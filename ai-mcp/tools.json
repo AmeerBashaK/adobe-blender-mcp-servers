@@ -1,0 +1,291 @@
+[
+  {
+    "name": "get_document_info",
+    "description": "Illustrator version, open documents, and the active (or named) document: color mode, artboards, layers and their top-level items (uuid, name, type, bounds, fill/stroke, text).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string", "description": "Document name. Omit for the active document." },
+        "items": { "type": "boolean", "description": "Include items per layer. Default true." }
+      }
+    }
+  },
+  {
+    "name": "create_document",
+    "description": "Create a new document. Common sizes: 1080x1080 (IG square), 1080x1350, 1080x1920, 1920x1080, 500x500 (logo).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "width": { "type": "number", "description": "Default 1080." },
+        "height": { "type": "number", "description": "Default 1080." },
+        "colorMode": { "type": "string", "enum": ["rgb", "cmyk"], "description": "Default rgb." },
+        "artboards": { "type": "integer", "description": "Number of artboards (laid out in a grid). Default 1." },
+        "spacing": { "type": "number", "description": "Gap between artboards. Default 40." },
+        "background": { "type": "string", "description": "Optional \"#rrggbb\": adds a locked Background layer filling each artboard." }
+      }
+    }
+  },
+  {
+    "name": "open_file",
+    "description": "Open an .ai, .pdf, .svg or .eps file.",
+    "inputSchema": {
+      "type": "object",
+      "properties": { "path": { "type": "string" } },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "add_shape",
+    "description": "Draw a vector shape: rectangle, rounded_rectangle, ellipse, polygon, star, line, or path (from points). x/y is the top-left; polygon/star use width as the diameter.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "type": { "type": "string", "enum": ["rectangle", "rounded_rectangle", "ellipse", "polygon", "star", "line", "path"] },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "width": { "type": "number", "description": "Default 100." },
+        "height": { "type": "number", "description": "Default = width." },
+        "radius": { "type": "number", "description": "Corner radius for rounded_rectangle. Default 12." },
+        "sides": { "type": "integer", "description": "Polygon sides. Default 6." },
+        "points": { "type": ["integer", "array"], "description": "Star: number of points (default 5). path/line: [[x, y], ...]." },
+        "innerRadius": { "type": "number", "description": "Star inner radius. Default width/4." },
+        "closed": { "type": "boolean", "description": "path: close it. Default true." },
+        "smooth": { "type": "boolean", "description": "path: make anchor points smooth." },
+        "fill": { "type": "string", "description": "\"#rrggbb\" or \"none\". Default black (unless only a stroke is given)." },
+        "stroke": { "type": "string", "description": "\"#rrggbb\" or \"none\"." },
+        "strokeWidth": { "type": "number" },
+        "opacity": { "type": "number" },
+        "blendMode": { "type": "string" },
+        "rotate": { "type": "number", "description": "Degrees counter-clockwise." },
+        "name": { "type": "string" },
+        "layer": { "type": "string", "description": "Layer name. Default: active layer." },
+        "group": { "type": "string", "description": "Add inside this group (name or uuid)." }
+      }
+    }
+  },
+  {
+    "name": "add_text",
+    "description": "Add point text at x/y (top-left of the text), or area (wrapping) text with box. Fonts by PostScript name, e.g. \"Montserrat-Bold\".",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "text": { "type": "string", "description": "\\n for line breaks." },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "align": { "type": "string", "enum": ["topleft", "center"], "description": "Whether x/y is the top-left (default) or center." },
+        "box": { "type": "array", "items": { "type": "number" }, "description": "[x, y, width, height] for area text." },
+        "font": { "type": "string" },
+        "fontSize": { "type": "number", "description": "Default 48." },
+        "color": { "type": "string", "description": "Default black." },
+        "justification": { "type": "string", "enum": ["left", "center", "right", "fulljustify"] },
+        "tracking": { "type": "number" },
+        "leading": { "type": "number" },
+        "opacity": { "type": "number" },
+        "outline": { "type": "boolean", "description": "Convert to outlines (paths) right away." },
+        "name": { "type": "string" },
+        "layer": { "type": "string" },
+        "group": { "type": "string" }
+      }
+    }
+  },
+  {
+    "name": "set_item_properties",
+    "description": "Change an item: name, fill, stroke, strokeWidth, opacity, blendMode, hidden, locked, position (x/y top-left or center), size (width/height, keeps aspect unless keepAspect=false), scale %, rotate, flip, moveBy, and for text: text, font, fontSize, color, justification, tracking, leading.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "item": { "type": "string", "description": "uuid or name. Omit for the single selected item." },
+        "name": { "type": "string" },
+        "fill": { "type": "string" },
+        "stroke": { "type": "string" },
+        "strokeWidth": { "type": "number" },
+        "opacity": { "type": "number" },
+        "blendMode": { "type": "string", "description": "normal, multiply, screen, overlay, softlight, hardlight, colordodge, colorburn, darken, lighten, difference, hue, saturation, color, luminosity" },
+        "hidden": { "type": "boolean" },
+        "locked": { "type": "boolean" },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "align": { "type": "string", "enum": ["topleft", "center"] },
+        "width": { "type": "number" },
+        "height": { "type": "number" },
+        "keepAspect": { "type": "boolean" },
+        "scale": { "type": "number", "description": "Percent, around the center." },
+        "scaleStrokes": { "type": "boolean" },
+        "rotate": { "type": "number", "description": "Degrees counter-clockwise." },
+        "flip": { "type": "string", "enum": ["horizontal", "vertical"] },
+        "moveBy": { "type": "array", "items": { "type": "number" }, "description": "[dx, dy], y down." },
+        "text": { "type": "string" },
+        "font": { "type": "string" },
+        "fontSize": { "type": "number" },
+        "color": { "type": "string" },
+        "justification": { "type": "string" },
+        "tracking": { "type": "number" },
+        "leading": { "type": "number" }
+      }
+    }
+  },
+  {
+    "name": "item_action",
+    "description": "delete, duplicate (optional moveBy), select, group, ungroup, clipping_mask (first item clips the rest), compound_path, outline_text, bring_to_front, send_to_back, bring_forward, send_backward, move_to_layer, align (to the active artboard: horizontal left/center/right, vertical top/center/bottom).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "action": { "type": "string", "enum": ["delete", "duplicate", "select", "group", "ungroup", "clipping_mask", "compound_path", "outline_text", "bring_to_front", "send_to_back", "bring_forward", "send_backward", "move_to_layer", "align"] },
+        "item": { "type": "string", "description": "One item (uuid or name)." },
+        "items": { "type": "array", "items": { "type": "string" }, "description": "Several items. Omit item and items to use the current selection." },
+        "name": { "type": "string", "description": "Name for the new group / duplicate." },
+        "moveBy": { "type": "array", "items": { "type": "number" } },
+        "layer": { "type": "string", "description": "Target layer for move_to_layer." },
+        "horizontal": { "type": "string", "enum": ["left", "center", "right"] },
+        "vertical": { "type": "string", "enum": ["top", "center", "bottom"] }
+      },
+      "required": ["action"]
+    }
+  },
+  {
+    "name": "layers",
+    "description": "List, add, rename, delete, show, hide, lock, unlock, activate, to_top, to_bottom layers.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "action": { "type": "string", "enum": ["list", "add", "rename", "delete", "show", "hide", "lock", "unlock", "activate", "to_top", "to_bottom"] },
+        "layer": { "type": "string" },
+        "name": { "type": "string" }
+      }
+    }
+  },
+  {
+    "name": "artboards",
+    "description": "List, add, resize, rename, activate, delete artboards, or fit one to its artwork. rect = [x, y, width, height].",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "action": { "type": "string", "enum": ["list", "add", "resize", "rename", "activate", "delete", "fit_to_art"] },
+        "index": { "type": "integer", "description": "Artboard index. Default: active." },
+        "rect": { "type": "array", "items": { "type": "number" } },
+        "name": { "type": "string" }
+      }
+    }
+  },
+  {
+    "name": "place_image",
+    "description": "Place an image (png, jpg, psd, pdf, svg...) at x/y, optionally scaled to a width and embedded.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "path": { "type": "string" },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "width": { "type": "number" },
+        "embed": { "type": "boolean" },
+        "name": { "type": "string" },
+        "layer": { "type": "string" },
+        "group": { "type": "string" }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "image_trace",
+    "description": "Vectorize a placed/raster image with Image Trace and expand it to paths. Presets: [Default], High Fidelity Photo, Low Fidelity Photo, 3 Colors, 6 Colors, 16 Colors, Shades of Gray, Black and White Logo (default), Sketched Art, Silhouettes, Line Art, Technical Drawing.",
+    "timeout": 300,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "item": { "type": "string" },
+        "preset": { "type": "string" },
+        "colors": { "type": "integer", "description": "Max colors (color presets)." },
+        "threshold": { "type": "integer", "description": "0-255 (black & white presets)." },
+        "ignoreWhite": { "type": "boolean" },
+        "expand": { "type": "boolean", "description": "Expand to paths. Default true." },
+        "name": { "type": "string" }
+      }
+    }
+  },
+  {
+    "name": "preview_document",
+    "description": "Render an artboard and return it as an image so you can see the result.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "artboard": { "type": "integer", "description": "Default: active artboard." },
+        "max_size": { "type": "integer", "description": "Longest side in px. Default 1024." }
+      }
+    }
+  },
+  {
+    "name": "export_document",
+    "description": "Export the active (or given) artboard as png, jpg or svg.",
+    "timeout": 300,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "path": { "type": "string" },
+        "format": { "type": "string", "enum": ["png", "jpg", "svg"], "description": "Default: from the extension." },
+        "artboard": { "type": "integer" },
+        "scale": { "type": "number", "description": "Percent (png/jpg). 200 = 2x. Default 100." },
+        "transparent": { "type": "boolean", "description": "PNG transparency. Default true." },
+        "quality": { "type": "number", "description": "JPG 0-100. Default 90." },
+        "outlineFonts": { "type": "boolean", "description": "SVG: convert text to outlines." }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "save_document",
+    "description": "Save the document, or Save As .ai / .pdf with path.",
+    "timeout": 300,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "path": { "type": "string" },
+        "editable": { "type": "boolean", "description": "PDF: preserve Illustrator editing. Default true." }
+      }
+    }
+  },
+  {
+    "name": "close_document",
+    "description": "Close a document, discarding changes unless save is true.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "save": { "type": "boolean" }
+      }
+    }
+  },
+  {
+    "name": "undo",
+    "description": "Undo (or redo) Illustrator steps. Note: one tool call can create several undo steps.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "steps": { "type": "integer", "description": "Default 1." },
+        "redo": { "type": "boolean" }
+      }
+    }
+  },
+  {
+    "name": "run_extendscript",
+    "description": "Escape hatch: run any Illustrator ExtendScript (ES3) and get the last expression's value back. Artboard coordinates are active (y up in Illustrator's own API; use Y(y) to flip). Helpers: findDoc, findItem, findLayer, toColor, describeItem, describeDoc, boundsOf, moveTo.",
+    "timeout": 600,
+    "inputSchema": {
+      "type": "object",
+      "properties": { "code": { "type": "string" } },
+      "required": ["code"]
+    }
+  }
+]

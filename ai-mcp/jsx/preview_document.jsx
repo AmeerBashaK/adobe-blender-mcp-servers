@@ -1,0 +1,16 @@
+var doc = findDoc(ARGS.document);
+var max = ARGS.max_size || 1024;
+var idx = ARGS.artboard !== undefined ? ARGS.artboard : doc.artboards.getActiveArtboardIndex();
+doc.artboards.setActiveArtboardIndex(idx);
+var r = doc.artboards[idx].artboardRect;
+var w = r[2] - r[0], h = r[1] - r[3];
+var s = Math.min(400, max / Math.max(w, h) * 100);
+var path = __MCP_WORKDIR + '/preview_' + new Date().getTime() + '.png';
+var o = new ExportOptionsPNG24();
+o.antiAliasing = true;
+o.transparency = false;
+o.artBoardClipping = true;
+o.horizontalScale = s;
+o.verticalScale = s;
+doc.exportFile(new File(path), ExportType.PNG24, o);
+return { __image: path, document: doc.name, artboard: idx, width: r2(w), height: r2(h) };

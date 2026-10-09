@@ -1,0 +1,112 @@
+[
+  {
+    "name": "status",
+    "description": "Check the MIDI port, loopMIDI and Character Animator, and list the saved trigger mappings (name -> note/CC).",
+    "inputSchema": { "type": "object", "properties": {} }
+  },
+  {
+    "name": "map_trigger",
+    "description": "Save a friendly name for a MIDI note (a trigger: swap, gesture, expression) or a CC (a parameter slider/dial). Omit note and cc to get the next free note from C2 up. remove=true deletes the mapping.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "e.g. \"wave\", \"smile\", \"arm_raise\"" },
+        "note": { "type": ["integer", "string"], "description": "0-127 or a name like C3, F#2 (C4 = 60)." },
+        "cc": { "type": "integer", "description": "Controller number 0-119 for a parameter." },
+        "channel": { "type": "integer", "description": "1-16. Default 1." },
+        "puppet": { "type": "string" },
+        "description": { "type": "string" },
+        "remove": { "type": "boolean" }
+      },
+      "required": ["name"]
+    }
+  },
+  {
+    "name": "learn",
+    "description": "Send a mapping's note (or a CC sweep) so Character Animator can capture it: first have the user click the trigger's or parameter's MIDI field in Character Animator so it is waiting for input.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "note": { "type": ["integer", "string"] }
+      }
+    }
+  },
+  {
+    "name": "trigger",
+    "description": "Fire a trigger: note on, hold, note off. Use a mapped name or a note. hold_ms keeps it pressed (for hold triggers); repeat fires it several times.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "note": { "type": ["integer", "string"] },
+        "velocity": { "type": "integer", "description": "1-127. Default 100." },
+        "hold_ms": { "type": "integer", "description": "Default 150." },
+        "repeat": { "type": "integer" },
+        "gap_ms": { "type": "integer", "description": "Gap between repeats. Default 150." },
+        "channel": { "type": "integer" }
+      }
+    }
+  },
+  {
+    "name": "note",
+    "description": "Press (on=true, default) or release (on=false) a note and leave it there, for triggers that should stay held across other actions.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "note": { "type": ["integer", "string"] },
+        "on": { "type": "boolean" },
+        "velocity": { "type": "integer" },
+        "channel": { "type": "integer" }
+      }
+    }
+  },
+  {
+    "name": "control",
+    "description": "Set a MIDI controller (CC) to a value 0-127, moving the Character Animator parameter linked to it.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "cc": { "type": "integer" },
+        "value": { "type": "number" },
+        "channel": { "type": "integer" }
+      },
+      "required": ["value"]
+    }
+  },
+  {
+    "name": "ramp",
+    "description": "Move a CC smoothly from one value to another over time (linear or ease_in_out), e.g. a slow head turn.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "cc": { "type": "integer" },
+        "from": { "type": "number" },
+        "to": { "type": "number" },
+        "duration_ms": { "type": "integer", "description": "Default 1000." },
+        "ease": { "type": "string", "enum": ["linear", "ease_in_out"] },
+        "channel": { "type": "integer" }
+      },
+      "required": ["from", "to"]
+    }
+  },
+  {
+    "name": "perform",
+    "description": "Play a timed sequence (up to 10 min), e.g. while Character Animator records. steps = [{at_ms, action: trigger|note|control|ramp, ...that action's fields}]. Example: [{\"at_ms\":0,\"name\":\"smile\"},{\"at_ms\":1200,\"name\":\"wave\",\"hold_ms\":800},{\"at_ms\":2500,\"action\":\"ramp\",\"name\":\"head_turn\",\"from\":64,\"to\":110,\"duration_ms\":600}].",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "steps": { "type": "array", "items": { "type": "object" } }
+      },
+      "required": ["steps"]
+    }
+  },
+  {
+    "name": "panic",
+    "description": "Release everything: All Notes Off and Reset Controllers on every channel.",
+    "inputSchema": { "type": "object", "properties": {} }
+  }
+]

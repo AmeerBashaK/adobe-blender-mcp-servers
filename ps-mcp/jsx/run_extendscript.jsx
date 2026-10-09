@@ -1,0 +1,1 @@
+return eval(ARGS.code);

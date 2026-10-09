@@ -1,0 +1,17 @@
+{
+    "wave":  {
+                 "type":  "note",
+                 "note":  36,
+                 "noteName":  "C2"
+             },
+    "smile":  {
+                  "type":  "note",
+                  "note":  37,
+                  "noteName":  "C#2"
+              },
+    "blink":  {
+                  "type":  "note",
+                  "note":  38,
+                  "noteName":  "D2"
+              }
+}
