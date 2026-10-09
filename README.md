@@ -30,3 +30,7 @@ Swap `ae-mcp` / the server name for any other folder. See each folder's README f
 ## Security
 
 Bridges listen on `127.0.0.1` only. `pr-mcp` and `blender-mcp` require a random per-session token written to `%LOCALAPPDATA%`, so other local processes can't send commands. The Adobe servers run ExtendScript in the app you point them at, so only connect clients you trust.
+
+## License
+
+[MIT](LICENSE)
