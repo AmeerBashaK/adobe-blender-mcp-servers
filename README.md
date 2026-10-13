@@ -1,6 +1,5 @@
 # Adobe + Blender MCP Servers
 
-[![M8ven Score](https://m8ven.ai/badge/mcp/ameerbashak-adobe-blender-mcp-servers-1a0w6a?v=1dc35074ee0b239a5b61f56a59c507e3)](https://m8ven.ai/mcp/ameerbashak-adobe-blender-mcp-servers-1a0w6a?s=readme)
 [![M8ven Score](https://m8ven.ai/badge/mcp/ameerbashak-adobe-blender-mcp-servers-1a0w6a?v=b4b62033737d0dc1bab3f7c8972965c4)](https://m8ven.ai/mcp/ameerbashak-adobe-blender-mcp-servers-1a0w6a?s=readme)
 
 MCP servers that let Claude (or any MCP client) drive running creative apps on Windows.
