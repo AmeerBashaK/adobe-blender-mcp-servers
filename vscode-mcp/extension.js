@@ -46,9 +46,12 @@ function describeEditor(ed, includeText) {
 }
 
 // ---------- tools ----------
+const hints = (readOnlyHint, destructiveHint, idempotentHint, openWorldHint) => ({ readOnlyHint, destructiveHint, idempotentHint, openWorldHint });
+const READ_ONLY = hints(true, false, true, false);
 const TOOLS = [
   {
     name: 'get_workspace_info',
+    annotations: READ_ONLY,
     description: 'Workspace folders, VS Code version, and the list of open editor tabs.',
     inputSchema: { type: 'object', properties: {} },
     run: async () => ({
@@ -69,12 +72,14 @@ const TOOLS = [
   },
   {
     name: 'get_active_editor',
+    annotations: READ_ONLY,
     description: 'The focused editor: file path, language, cursor/selections with selected text, visible range. Set includeText to also return the whole document (including unsaved changes).',
     inputSchema: { type: 'object', properties: { includeText: { type: 'boolean' } } },
     run: async (a) => describeEditor(vscode.window.activeTextEditor, a.includeText) || { activeEditor: null },
   },
   {
     name: 'open_file',
+    annotations: hints(false, false, true, false),
     description: 'Open a file in VS Code, optionally jumping to a line/column (1-based) or selecting up to endLine/endColumn.',
     inputSchema: {
       type: 'object',
@@ -101,6 +106,7 @@ const TOOLS = [
   },
   {
     name: 'get_diagnostics',
+    annotations: READ_ONLY,
     description: 'Errors/warnings from the Problems panel, for one file or the whole workspace.',
     inputSchema: {
       type: 'object',
@@ -132,6 +138,7 @@ const TOOLS = [
   },
   {
     name: 'replace_text',
+    annotations: hints(false, true, false, false),
     description: 'Replace a range in a file as an undoable editor edit (1-based lines/columns; end is exclusive). Omit the range to replace the active selection. Leaves the file unsaved unless save is true.',
     inputSchema: {
       type: 'object',
@@ -166,6 +173,7 @@ const TOOLS = [
   },
   {
     name: 'save_files',
+    annotations: hints(false, false, true, false),
     description: 'Save one file, or all dirty files when path is omitted.',
     inputSchema: { type: 'object', properties: { path: { type: 'string' } } },
     run: async (a) => {
@@ -176,6 +184,7 @@ const TOOLS = [
   },
   {
     name: 'run_in_terminal',
+    annotations: hints(false, true, false, true),
     description: 'Send a command line to a VS Code integrated terminal (created if missing) and show it. Output is not captured.',
     inputSchema: {
       type: 'object',
@@ -195,6 +204,7 @@ const TOOLS = [
   },
   {
     name: 'execute_command',
+    annotations: hints(false, true, false, true),
     description: 'Run any VS Code command by id (e.g. "workbench.action.files.newUntitledFile", "editor.action.formatDocument") with optional JSON args. Returns the command result if serializable.',
     inputSchema: {
       type: 'object',
@@ -209,6 +219,7 @@ const TOOLS = [
   },
   {
     name: 'list_commands',
+    annotations: READ_ONLY,
     description: 'List available VS Code command ids, filtered by a substring.',
     inputSchema: { type: 'object', properties: { filter: { type: 'string' } } },
     run: async (a) => {
@@ -220,6 +231,7 @@ const TOOLS = [
   },
   {
     name: 'show_message',
+    annotations: hints(false, false, false, false),
     description: 'Show a notification in VS Code.',
     inputSchema: {
       type: 'object',
@@ -255,7 +267,7 @@ async function handleRpc(msg) {
     case 'ping':
       return reply({});
     case 'tools/list':
-      return reply({ tools: TOOLS.map(({ name, description, inputSchema }) => ({ name, description, inputSchema })) });
+      return reply({ tools: TOOLS.map(({ name, description, inputSchema, annotations }) => ({ name, description, inputSchema, annotations })) });
     case 'tools/call': {
       const tool = TOOL_MAP.get(params && params.name);
       if (!tool) return fail(-32602, `Unknown tool: ${params && params.name}`);
